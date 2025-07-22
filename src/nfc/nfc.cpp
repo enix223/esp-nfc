@@ -134,7 +134,7 @@ namespace cl
     Wire.end();
   }
 
-  std::string NfcModule::FormatHexString(const uint8_t *buf, uint8_t bufLen)
+  std::string NfcModule::FormatHexString(const uint8_t *buf, uint8_t bufLen, std::string separator)
   {
     std::ostringstream oss;
     oss << std::hex << std::setfill('0'); // Set to hex format with leading zeros
@@ -144,7 +144,7 @@ namespace cl
       oss << std::setw(2) << static_cast<int>(buf[i]); // Each byte as 2-digit hex
       if (i < bufLen - 1)
       {
-        oss << " "; // Add space between bytes (optional)
+        oss << separator;
       }
     }
 

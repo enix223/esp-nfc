@@ -1,0 +1,8 @@
+[env:esp32s3-cam]
+build_flags =
+    ${common.build_flags}
+    -DCONFIG_SERIAL_BAUD_RATE=115200
+    -DCONFIG_PN532_I2C_SDA=8
+    -DCONFIG_PN532_I2C_SCL=9
+    -DCONFIG_PN532_IRQ=4
+    -DCONFIG_PN532_RESET=5
