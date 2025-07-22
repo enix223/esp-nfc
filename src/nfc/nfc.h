@@ -25,6 +25,7 @@ namespace cl
 
   private:
     void read();
+    void simulate();
     std::string uidToHexString(const uint8_t *uid, uint8_t uidLength);
 
     std::shared_ptr<cl::ILogger> logger_;
