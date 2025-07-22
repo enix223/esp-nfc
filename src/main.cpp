@@ -10,7 +10,7 @@ void setup()
   delay(3000);
 
   logger->Start(cl::DEBUG);
-  auto rc = nfc->begin(cl::NfcModule::Mode::READER);
+  auto rc = nfc->Begin(cl::NfcModule::Mode::READER);
   if (!rc)
   {
     logger->Error(TAG, "failed to start nfc module");
@@ -21,7 +21,7 @@ void setup()
 
 void loop()
 {
-  nfc->loop();
+  nfc->Loop();
 
   // Wait 1 second before continuing
   delay(1000);

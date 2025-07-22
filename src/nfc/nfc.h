@@ -19,14 +19,14 @@ namespace cl
     NfcModule(std::shared_ptr<cl::ILogger> logger);
     ~NfcModule() = default;
 
-    bool begin(Mode mode);
-    void loop();
-    void stop();
+    bool Begin(Mode mode);
+    void Loop();
+    void Stop();
 
   private:
-    void read();
-    void simulate();
-    std::string uidToHexString(const uint8_t *uid, uint8_t uidLength);
+    void Read();
+    void Emulate();
+    std::string FormatHexString(const uint8_t *uid, uint8_t uidLength);
 
     std::shared_ptr<cl::ILogger> logger_;
     std::unique_ptr<Adafruit_PN532> nfcHw_;

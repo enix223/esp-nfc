@@ -15,7 +15,7 @@ namespace cl
     nfcHw_ = std::make_unique<Adafruit_PN532>(CONFIG_PN532_IRQ, CONFIG_PN532_RESET);
   }
 
-  bool NfcModule::begin(Mode mode)
+  bool NfcModule::Begin(Mode mode)
   {
     if (started_)
     {
@@ -46,15 +46,18 @@ namespace cl
     return true;
   }
 
-  void NfcModule::loop()
+  void NfcModule::Loop()
   {
     if (mode_ == Mode::READER)
     {
-      read();
+      Read();
+      return;
     }
+
+    Emulate();
   }
 
-  void NfcModule::read()
+  void NfcModule::Read()
   {
     uint8_t success;
     uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0}; // Buffer to store the returned UID
@@ -73,7 +76,7 @@ namespace cl
       oss << "  UID Length: " << static_cast<int>(uidLength) << " bytes";
       logger_->Info(TAG, oss.str().c_str());
 
-      auto hexUid = uidToHexString(uid, uidLength);
+      auto hexUid = FormatHexString(uid, uidLength);
       oss.str("");
       oss << "  UID Value: " << hexUid;
       logger_->Info(TAG, oss.str().c_str());
@@ -97,32 +100,28 @@ namespace cl
     }
   }
 
-  void NfcModule::simulate()
+  void NfcModule::Emulate()
   {
-    uint8_t command[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    uint8_t response[255];
-    uint8_t responseLength = 255;
-
     // Wait for a reader to contact us
-    if (nfcHw_->startPassiveTargetIDDetection(1500))
+    if (nfcHw_->inListPassiveTarget())
     {
       // Timeout after 1500ms
-      Serial.println("Reader detected!");
+      logger_->Info(TAG, "Reader detected!");
 
-      // Respond with our NDEF message when read
-      if (nfcHw_->getDataTarget(response, &responseLength))
+      uint8_t response[255];
+      uint8_t responseLength = sizeof(response);
+
+      bool success = nfcHw_->inDataExchange(ndefMessage, sizeof(ndefMessage), response, &responseLength);
+
+      if (success)
       {
-        Serial.println("Received request from reader");
-
-        // Send our NDEF message
-        if (nfcHw_->setDataTarget(ndefMessage, sizeof(ndefMessage)))
-        {
-          Serial.println("NDEF message sent successfully");
-        }
-        else
-        {
-          Serial.println("Failed to send NDEF message");
-        }
+        auto msg = "Sent " + FormatHexString(response, responseLength);
+        logger_->Info(TAG, msg.c_str());
+        nfcHw_->PrintHexChar(response, responseLength);
+      }
+      else
+      {
+        logger_->Warn(TAG, "Not sent");
       }
 
       // Wait a bit before allowing another read
@@ -130,20 +129,20 @@ namespace cl
     }
   }
 
-  void NfcModule::stop()
+  void NfcModule::Stop()
   {
     Wire.end();
   }
 
-  std::string NfcModule::uidToHexString(const uint8_t *uid, uint8_t uidLength)
+  std::string NfcModule::FormatHexString(const uint8_t *buf, uint8_t bufLen)
   {
     std::ostringstream oss;
     oss << std::hex << std::setfill('0'); // Set to hex format with leading zeros
 
-    for (uint8_t i = 0; i < uidLength; i++)
+    for (uint8_t i = 0; i < bufLen; i++)
     {
-      oss << std::setw(2) << static_cast<int>(uid[i]); // Each byte as 2-digit hex
-      if (i < uidLength - 1)
+      oss << std::setw(2) << static_cast<int>(buf[i]); // Each byte as 2-digit hex
+      if (i < bufLen - 1)
       {
         oss << " "; // Add space between bytes (optional)
       }
