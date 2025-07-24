@@ -27,6 +27,7 @@ namespace cl
     void Read();
     void Emulate();
     std::string FormatHexString(const uint8_t *uid, uint8_t uidLength, std::string separator = " ");
+    void CheckMifareClassicEncryption(uint8_t *uid, uint8_t uidLength);
 
     std::shared_ptr<cl::ILogger> logger_;
     std::unique_ptr<Adafruit_PN532> nfcHw_;

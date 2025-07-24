@@ -95,8 +95,37 @@ namespace cl
         oss.str("");
         oss << ("Seems to be a Mifare Classic card #") << cardid;
         logger_->Info(TAG, oss.str().c_str());
+
+        CheckMifareClassicEncryption(uid, uidLength);
       }
       logger_->Info(TAG, "");
+    }
+  }
+
+  void NfcModule::CheckMifareClassicEncryption(uint8_t *uid, uint8_t uidLength)
+  {
+    uint8_t keyA[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // Default key A
+    uint8_t data[16];
+
+    for (int i = 0; i < 63; i++)
+    {
+      if (nfcHw_->mifareclassic_AuthenticateBlock(uid, uidLength, i, 0, keyA))
+      {
+        if (nfcHw_->mifareclassic_ReadDataBlock(i, data))
+        {
+          auto msg = ("Data read: " + std::to_string(i));
+          logger_->Info(TAG, msg.c_str());
+          logger_->Info(TAG, FormatHexString(data, 16).c_str());
+        }
+        else
+        {
+          logger_->Error(TAG, "Data read failed");
+        }
+      }
+      else
+      {
+        logger_->Error(TAG, "Authentication FAILED (Card is encrypted with custom keys)");
+      }
     }
   }
 
